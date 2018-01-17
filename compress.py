@@ -1,3 +1,18 @@
+"""
+Module defines functions for compressing and decomressing files.
+
+Functions:
+encode() -- Encode bytes using given codes.
+file_chunks() -- Iterate through file chunk by chunk (of given size).
+calc_freqs() -- Calculate frequency of each byte in a file.
+compress() -- Compress given file using Huffman coding.
+extract_codes() -- Extract codes used for encoding, from tree representation.
+read_header() -- Map codes used for encoding on bytes.
+decode() -- Decode sequence of bits.
+decompress() -- Decompress file compressed with Huffman coding.
+"""
+
+
 from tree import HuffmanTree
 from collections import Counter
 from math import ceil
@@ -6,18 +21,37 @@ from functools import partial
 from bitbuffer import default_size, OutBitBuffer
 from argparse import ArgumentParser, SUPPRESS
 
-# Todo: handling empty file and file with just one byte.
-# Todo: tests.
-# Todo: documentation.
 
 def encode(text, bytes_codes):
+    """
+    Encode bytes using given codes.
+
+    Args:
+    text -- Bytes to be encoded.
+    bytes_codes -- Mapping bytes->codes.
+    """
     codes = map(lambda x: bytes_codes[x], text)
     return ''.join(codes)
 
+
 def file_chunks(infileobj, size):
+    """
+    Return iterator to read file chunk by chunk.
+
+    Args:
+    infileobj -- File object to read from.
+    size -- Size of a chunk.
+    """
     return iter(partial(infileobj.read, size), b'')
 
+
 def calc_freqs(infileobj):
+    """
+    Calculate frequency of each byte in a file.
+
+    Args:
+    infileobj -- File object to read from.
+    """
     freqs = Counter()
     for chunk in file_chunks(infileobj, default_size):
         freqs.update(chunk)
@@ -26,7 +60,15 @@ def calc_freqs(infileobj):
     infileobj.seek(0)
     return freqs
 
+
 def compress(infile, outfile):
+    """
+    Compress given file using Huffman coding.
+
+    Args:
+    infile -- Path to file to be compressed.
+    outfile -- Path to save compressed file.
+    """
     with open(infile, 'rb') as infileobj, \
          OutBitBuffer(outfile) as outbuffer:
         freqs = calc_freqs(infileobj)
@@ -40,7 +82,14 @@ def compress(infile, outfile):
             encoded = encode(chunk, tree.bytes_codes)
             outbuffer.write(encoded)
 
+
 def extract_codes(tree_bits):
+    """
+    Extract codes used for encoding from tree structure representation.
+
+    Args:
+    tree_bits -- Binary representation of a tree structure.
+    """
     codes = []
     code = []
     for prev, cur in zip(chain('0', tree_bits), tree_bits):
@@ -59,14 +108,20 @@ def extract_codes(tree_bits):
         else:
             code.pop()
     return codes
-            
-        
+
+
 def read_header(infileobj):
+    """
+    Map codes used for encoding on bytes.
+
+    Args:
+    infileobj -- File object to read from.
+    """
     # Reading tree representation.
     bytes_num = ord(infileobj.read(1)) + 1
     leaf_bytes = infileobj.read(bytes_num)
     # Tree with l leaves is written with 4*l - 4 bits.
-    tree_bytes = infileobj.read( ceil( (4*bytes_num - 4)/8 ) + 1 )
+    tree_bytes = infileobj.read(ceil((4*bytes_num - 4)/8) + 1)
 
     # Removing align from the representation.
     if tree_bytes[0].bit_length() == 8:
@@ -83,7 +138,15 @@ def read_header(infileobj):
     rest = tree_bits[4*bytes_num - 4 : ]
     return codes_bytes, rest
 
+
 def decode(encoded, codes_bytes):
+    """
+    Decode sequence of bits.
+
+    Args:
+    encoded -- Bits to be decoded.
+    codes_bytes -- Mapping codes->bytes.
+    """
     code = ''
     decoded = bytearray()
     for bit in encoded:
@@ -93,7 +156,15 @@ def decode(encoded, codes_bytes):
             code = ''
     return decoded, code
 
+
 def decompress(infile, outfile):
+    """
+    Decompress given file.
+
+    Args:
+    infile -- Path to file to be decompressed.
+    outfile -- Path to save decompressed file.
+    """
     with open(infile, 'rb') as infileobj, \
          open(outfile, 'wb') as outbuffer:
         # Extracting codes from file header and mapping on bytes.
@@ -105,11 +176,12 @@ def decompress(infile, outfile):
             decoded, rest = decode(encoded, codes_bytes)
             outbuffer.write(decoded)
 
+
 if __name__ == '__main__':
     # Adding arguments.
     parser = ArgumentParser(description='Compression tool.')
     parser.add_argument('infile', default=SUPPRESS, help='Input file.')
-    parser.add_argument('-o', '--outfile', default=None,
+    parser.add_argument('-o', '--outfile', defnault=None,
                         help="Output file. If this option is omitted outfile name\
                         is set to infile.comp, if infile is compressed, infile.decomp,\
                         if infile is decompressed and it doesn't end with .comp. \
