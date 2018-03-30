@@ -110,7 +110,7 @@ class HuffmanTree:
         self.bytes_codes = {}
         self.header = []
 
-    def __traverse(self, node, code):
+    def __traverse(self, node, code, tree_bits):
         """
         Traverse the tree and create it's structure representation.
 
@@ -131,11 +131,11 @@ class HuffmanTree:
             self.header.append(int_to_bits(node.byte, 8))
             self.encoding_length += node.freq * len(code)
         else:
-            self.tree_bits.append('0')
-            self.__traverse(node.left, code + '0')
-            self.tree_bits.extend(('1', '0'))
-            self.__traverse(node.right, code + '1')
-            self.tree_bits.append('1')
+            tree_bits.append('0')
+            self.__traverse(node.left, code + '0', tree_bits)
+            tree_bits.extend(('1', '0'))
+            self.__traverse(node.right, code + '1', tree_bits)
+            tree_bits.append('1')
 
     def serialize(self):
         """
@@ -151,17 +151,16 @@ class HuffmanTree:
         header - Binary representation of the tree.
         """
         # Writing number of bytes - 1, so we can fit 256, 0 bytes won't be compressed.
-        self.tree_bits = []
+        tree_bits = []
         self.header.append(int_to_bits(self.leaves_num - 1, 8))
 
         # Creating tree structure representation.
-        self.__traverse(self.root, '')
+        self.__traverse(self.root, '', tree_bits)
 
         # Align, so total number of bits is divisible by 8.
-        align_length = (8 - (len(self.tree_bits) + self.encoding_length) % 8) % 8
+        align_length = (8 - (len(tree_bits) + self.encoding_length) % 8) % 8
         align = align_length * '1'
 
         # Joining all pieces.
-        self.header = ''.join(chain(self.header, (align,), self.tree_bits))
-        del self.tree_bits
+        self.header = ''.join(chain(self.header, (align,), tree_bits))
         return self.header
