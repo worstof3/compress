@@ -162,6 +162,17 @@ class TestTreeMethods(TestCase):
         self.assertEqual(tree.root.right.left, Node(b'b', 1))
         self.assertEqual(tree.root.right.right, Node(b'c', 1))
 
+    def test_bytes_codes_and_encoding_length(self):
+        tree = HuffmanTree(Counter(b'ab'))
+        tree.serialize()
+        self.assertEqual(tree.encoding_length, 2)
+        self.assertDictEqual(tree.bytes_codes, {ord('a'): '0', ord('b'): '1'})
+
+        tree = HuffmanTree(Counter(b'aabc'))
+        tree.serialize()
+        self.assertEqual(tree.encoding_length, 6)
+        self.assertDictEqual(tree.bytes_codes, {ord('a'): '0', ord('b'): '10', ord('c'): '11'})
+
     def test_serialize(self):
         names = ('two', 'three', 'four', 'five',
                  'two_rep','three_rep', 'four_rep', 'five_rep')
@@ -193,8 +204,8 @@ class TestTreeMethods(TestCase):
             )
 
         for name, arg, real_result in zip(names, args, real_results):
-            self.assertEqual(HuffmanTree(arg).serialize(), real_result,
-                             'Error in test {0}.'.format(name))
+            with self.subTest(name=name, arg=arg, real_result=real_result):
+                self.assertEqual(HuffmanTree(arg).serialize(), real_result)
 
 
 class TestCompressFunctions(TestCase):
