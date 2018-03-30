@@ -18,6 +18,7 @@ def extract_codes(tree_bits):
 
     Each 01 in tree representation means leaf, 00 means moving left in the
     tree, 10 means going right and 11 means going up.
+
     Args:
     tree_bits -- Binary representation of a tree structure.
     """
@@ -99,6 +100,6 @@ def decompress(infile, outfile):
             decoded, rest = decode(encoded, codes_bytes)
             outfile.write(decoded)
 
-        # It's possible that entire encoding is readed with tree representation.
+        # It's possible that entire encoding is read with tree representation.
         if rest:
             outfile.write(decode(rest, codes_bytes)[0])
