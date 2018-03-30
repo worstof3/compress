@@ -19,13 +19,14 @@ class Node:
     """
     Class representing node in Huffman tree.
 
-    Special methods:
+    Magic methods:
     __init__() -- Initialize attributes.
     __lt__() -- (Frequency, byte) comparison.
     __eq__() -- (Frequency, byte) comparison.
+    __repr__() -- Return 'Node(byte, freq)'.
 
-    Attributes:
-    byte -- Byte(s) associated with node, for leaf it's one byte for inner
+    Instance attributes:
+    byte -- Byte(s) associated with node, for leaf it's one byte, for inner
             node it's left.byte + right.byte.
     freq -- Frequency of a byte.
     left -- Left son of a node.
@@ -53,19 +54,23 @@ class Node:
         """(Frequency, byte) comparison."""
         return (self.freq, self.byte) == (other.freq, other.byte)
 
+    def __repr__(self):
+        """Return 'Node(byte, freq)'"""
+        return 'Node(' + repr((self.byte, self.freq)) + ')'
+
 
 class HuffmanTree:
     """
     Class representing Huffman tree.
 
     Methods:
-    __traverse() -- Traverse the tree, calculate length of encoding and codes.
     serialize() -- Create binary representation of a tree.
+    __traverse() -- Traverse the tree, calculate length of encoding and codes.
 
-    Special methods:
+    Magic methods:
     __init__() -- Create Huffman tree from given byte frequencies.
 
-    Attributes:
+    Instance attributes:
     leaves_num -- Number of leaves in the tree.
     root -- Root of the tree.
     encoding_length -- Length of file encoding.
@@ -84,11 +89,11 @@ class HuffmanTree:
         elements. The created node has the two elements as its children.
         We do this until there is only one node, which is a root of a tree.
         To ensure that order of bytes written in file header is always the
-        same, each we associate with each node concatenated bytes of its
+        same, we associate with each node concatenated bytes of its
         children.
 
         Args:
-        frequencies -- Dictionary mapping bytes -> frequencies.
+        frequencies -- Mapping bytes -> frequencies.
         """
         heap = [Node(byte, freq) for (byte, freq) in frequencies.items()]
         heapify(heap)

@@ -1,5 +1,5 @@
 from unittest import TestCase, main, TestLoader
-from ..tree import HuffmanTree
+from ..tree import Node, HuffmanTree
 from ..bitoperations import part, int_to_bits, file_chunks, create_bytes, bits_from_bytes
 from ..comp import encode, compress_one_byte, compress, EmptyFile
 from ..decomp import extract_codes, decode, decompress
@@ -139,6 +139,29 @@ class TestBitMethods(TestCase):
 
 
 class TestTreeMethods(TestCase):
+    def test_node_lt(self):
+        self.assertLess(Node(2, b'a'), Node(3, b'ab'))
+        self.assertLess(Node(2, b'a'), Node(2, b'b'))
+
+    def test_node_eq(self):
+        self.assertEqual(Node(2, b'a'), Node(2, b'a'))
+        self.assertNotEqual(Node(2, b'a'), Node(2, b'b'))
+        self.assertNotEqual(Node(2, b'a'), Node(3, b'a'))
+        self.assertNotEqual(Node(2, b'a'), Node(3, b'b'))
+
+    def test_create_tree(self):
+        tree = HuffmanTree({b'a': 1, b'b': 1})
+        self.assertEqual(tree.root, Node(b'ab', 2))
+        self.assertEqual(tree.root.left, Node(b'a', 1))
+        self.assertEqual(tree.root.right, Node(b'b', 1))
+
+        tree = HuffmanTree({b'a': 2, b'b': 1, b'c': 1})
+        self.assertEqual(tree.root, Node(b'abc', 4))
+        self.assertEqual(tree.root.left, Node(b'a', 2))
+        self.assertEqual(tree.root.right, Node(b'bc', 2))
+        self.assertEqual(tree.root.right.left, Node(b'b', 1))
+        self.assertEqual(tree.root.right.right, Node(b'c', 1))
+
     def test_serialize(self):
         names = ('two', 'three', 'four', 'five',
                  'two_rep','three_rep', 'four_rep', 'five_rep')
