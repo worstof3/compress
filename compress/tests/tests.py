@@ -33,7 +33,6 @@ class TestBitMethods(TestCase):
                 with self.subTest(bitstring=bitstring, position=position, real_result=real_result):
                     self.assertEqual(part(bitstring, position), real_result)
 
-
     def test_int_to_bits(self):
         numbers = (
             0,
@@ -58,7 +57,6 @@ class TestBitMethods(TestCase):
             for length, real_result in zip(len_tuple, result_tuple):
                 with self.subTest(number=number, length=length, real_result=real_result):
                     self.assertEqual(int_to_bits(number, length), real_result)
-
 
     def test_file_chunks(self):
         files = (
@@ -120,7 +118,6 @@ class TestBitMethods(TestCase):
             with self.subTest(bitstring=bitstring, real_result=real_result):
                 self.assertEqual(create_bytes(bitstring), real_result)
 
-
     def test_bits_from_bytes(self):
         bytesobjects = (
             b'',
@@ -174,8 +171,6 @@ class TestTreeMethods(TestCase):
         self.assertDictEqual(tree.bytes_codes, {ord('a'): '0', ord('b'): '10', ord('c'): '11'})
 
     def test_serialize(self):
-        names = ('two', 'three', 'four', 'five',
-                 'two_rep','three_rep', 'four_rep', 'five_rep')
         args = (
             Counter(b'ab'),
             Counter(b'abc'),
@@ -203,14 +198,13 @@ class TestTreeMethods(TestCase):
                      '01100001', '01100010', '00101100', '10010111'))
             )
 
-        for name, arg, real_result in zip(names, args, real_results):
-            with self.subTest(name=name, arg=arg, real_result=real_result):
+        for arg, real_result in zip(args, real_results):
+            with self.subTest(arg=arg, real_result=real_result):
                 self.assertEqual(HuffmanTree(arg).serialize(), real_result)
 
 
 class TestCompressFunctions(TestCase):
     def test_encode(self):
-        names = ('empty', 'one', 'another', 'two_diff', 'two_same', 'five')
         args = (
             (b'', {}),
             (b'a', dict(zip(bytearray(b'a'), ['101']))),
@@ -221,12 +215,11 @@ class TestCompressFunctions(TestCase):
             )
         real_results = ('', '101', '0', '01', '00', '00001111')
 
-        for name, arg, real_result in zip(names, args, real_results):
-            self.assertEqual(encode(*arg), real_result,
-                             'Error in test {0}.'.format(name))
+        for arg, real_result in zip(args, real_results):
+            with self.subTest(arg=arg, real_result=real_result):
+                self.assertEqual(encode(*arg), real_result)
 
     def test_compress_one_byte(self):
-        names = ('one', 'two', 'three', 'ten')
         args = (
             Counter(b'a'),
             Counter(b'\xff\xff'),
@@ -240,9 +233,9 @@ class TestCompressFunctions(TestCase):
             bytearray(b'\x00c\x0a')
             )
 
-        for name, arg, real_result in zip(names, args, real_results):
-            self.assertEqual(compress_one_byte(arg), real_result,
-                             'Error in test {0}.'.format(name))
+        for arg, real_result in zip(args, real_results):
+            with self.subTest(arg=arg, real_result=real_result):
+                self.assertEqual(compress_one_byte(arg), real_result)
 
     def test_compress(self):
         # Empty file test.
@@ -250,7 +243,6 @@ class TestCompressFunctions(TestCase):
         empty.name = 'empty'
         self.assertRaises(EmptyFile, compress, empty, BytesIO())
         
-        names = ('one', 'one_repeated', 'one_large', 'two', 'couple', 'large')
         cases = (
             b'a',
             b'aa',
@@ -268,17 +260,16 @@ class TestCompressFunctions(TestCase):
             b'\x02\xffac\x4b' + 2500000*b'\xaa' + 1250000*b'\x00' + 2500000*b'\xff'
         )
         
-        for name, case, real_result in zip(names, cases, real_results):
-            infile, outfile = BytesIO(case), BytesIO()
-            compress(infile, outfile)
-            outfile.seek(0)
-            self.assertEqual(outfile.read(), real_result,
-                             'Error in test {0}'.format(name))
+        for case, real_result in zip(cases, real_results):
+            with self.subTest(case=case, real_result=real_result):
+                infile, outfile = BytesIO(case), BytesIO()
+                compress(infile, outfile)
+                outfile.seek(0)
+                self.assertEqual(outfile.read(), real_result)
 
 
 class TestDecompressFunctions(TestCase):
     def test_extract_codes(self):
-        names = ('two', 'three', 'four', 'five')
         args = (
             '0101',
             '01001011',
@@ -292,12 +283,11 @@ class TestDecompressFunctions(TestCase):
             ['00', '01', '10', '110', '111']
             )
 
-        for name, arg, real_result in zip(names, args, real_results):
-            self.assertEqual(extract_codes(arg), real_result,
-                             'Error in test {0}'.format(name))
+        for arg, real_result in zip(args, real_results):
+            with self.subTest(arg=arg, real_result=real_result):
+                self.assertEqual(extract_codes(arg), real_result)
 
     def test_decode(self):
-        names = ('empty', 'one', 'one_rest', 'two', 'two_rest', 'four', 'four_rest')
         args = (
             ('', {'0': 97, '1': 98}),
             ('0', {'0': 97, '1': 98}),
@@ -317,12 +307,11 @@ class TestDecompressFunctions(TestCase):
             (b'abcd', '0')
             )
 
-        for name, arg, real_result in zip(names, args, real_results):
-            self.assertEqual(decode(*arg), real_result,
-                             'Error in test {0}'.format(name))
+        for arg, real_result in zip(args, real_results):
+            with self.subTest(arg=arg, real_result=real_result):
+                self.assertEqual(decode(*arg), real_result)
 
     def test_decompress(self):
-        names = ('one', 'one_repeated', 'one_large', 'two', 'couple', 'large')
         cases = (
             b'\x00a\x01',
             b'\x00a\x02',
@@ -340,12 +329,12 @@ class TestDecompressFunctions(TestCase):
             10**7 * b'a' + 10**7 * b'\xff' + 10**7 * b'c'
             )
 
-        for name, case, real_result in zip(names, cases, real_results):
-            infile, outfile = BytesIO(case), BytesIO()
-            decompress(infile, outfile)
-            outfile.seek(0)
-            self.assertEqual(outfile.read(), real_result,
-                             'Error in test {0}'.format(name))
+        for case, real_result in zip(cases, real_results):
+            with self.subTest(case=case, real_result=real_result):
+                infile, outfile = BytesIO(case), BytesIO()
+                decompress(infile, outfile)
+                outfile.seek(0)
+                self.assertEqual(outfile.read(), real_result)
 
 
 loader = TestLoader()
