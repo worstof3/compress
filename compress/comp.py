@@ -59,7 +59,7 @@ def compress(infile, outfile):
     compressed to form ZeroByte_ByteInFile_RepeatNumber. If it contains
     at least two different bytes, Huffman tree is created. After compression
     file is in form TreeRepresentation_Encoding, TreeRepresentation
-    is described in help to method serialize of clas HuffmanTree.
+    is described in help to method serialize of class HuffmanTree.
 
     Args:
     infile -- File object of file to be compressed.
